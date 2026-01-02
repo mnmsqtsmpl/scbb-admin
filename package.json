@@ -1,0 +1,39 @@
+{
+  "name": "scbb-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue src",
+    "test": "vitest",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "vue": "^3.3.0",
+    "vue-router": "^4.1.6",
+    "pinia": "^2.0.0",
+    "element-plus": "^2.3.0",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "eslint": "^8.50.0",
+    "eslint-plugin-vue": "^9.15.0",
+    "prettier": "^3.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0",
+    "vitest": "^1.4.0",
+    "@vue/test-utils": "^2.3.0",
+    "@testing-library/vue": "^1.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.{js,vue}": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
