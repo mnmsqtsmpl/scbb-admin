@@ -1,30 +1,25 @@
 <template>
   <div class="operator-page">
     <el-row>
-      <el-col :span="5" class="left-actions">
-        <div class="actions">
-          <div class="status-row">
-            <div class="op-title">{{ operator?.fullName || 'Оператор' }}</div>
-            <el-tag v-if="operator" :type="operator.status === 'active' ? 'success' : 'info'">{{ operator.status === 'active' ? 'Активный' : 'Неактивный' }}</el-tag>
+      <el-col :span="24">
+        <el-card>
+          <div class="header-compact header-row">
+            <div class="headline-col">
+              <div class="headline-line" style="display:flex; align-items:center; gap:8px;">
+                <div class="headline">{{ operator?.fullName || 'Оператор DBO' }}</div>
+                <el-tag v-if="operator" :type="operator.status === 'active' ? 'success' : 'info'">{{ operator.status === 'active' ? 'Активный' : 'Неактивный' }}</el-tag>
+              </div>
+              <div class="sub">Id в Совкомбанк: <strong>{{ operator?.uid }}</strong></div>
+            </div>
           </div>
 
-          <el-divider />
-
-          <el-button block type="primary" size="small">Заблокировать</el-button>
-          <el-button block plain size="small">Включить Websocket-чаты</el-button>
-          <el-button block plain size="small">Обновить инфо</el-button>
-          <el-button block plain size="small">Отправить логин и пароль</el-button>
-          <el-button block type="warning" size="small">Сбросить пароль</el-button>
-          <el-button block type="danger" size="small">Удалить доступ</el-button>
-
-        </div>
-      </el-col>
-
-      <el-col :span="19">
-        <el-card>
-          <div class="header-compact">
-            <div class="headline">{{ operator?.fullName || 'Оператор DBO' }}</div>
-            <div class="sub">Id в Совкомбанк: <strong>{{ operator?.uid }}</strong></div>
+          <div class="actions-row">
+            <el-button type="primary" size="small" @click="onBlock">Заблокировать</el-button>
+            <el-button plain size="small" @click="onToggleWebsocket">Включить Websocket-чаты</el-button>
+            <el-button plain size="small" @click="onRefreshInfo">Обновить инфо</el-button>
+            <el-button plain size="small" @click="onSendCredentials">Отправить логин и пароль</el-button>
+            <el-button type="warning" size="small" @click="onResetPassword">Сбросить пароль</el-button>
+            <el-button type="danger" size="small" @click="onDeleteAccess">Удалить доступ</el-button>
           </div>
 
           <el-collapse v-model:active-name="activePanels">
@@ -110,12 +105,37 @@ export default {
       loadAccounts()
     }
 
+    function onBlock() {
+      // placeholder - implement real logic later
+      console.log('block operator', operator.value?.uid)
+    }
+
+    function onToggleWebsocket() {
+      console.log('toggle websocket for', operator.value?.uid)
+    }
+
+    function onRefreshInfo() {
+      loadOperator()
+    }
+
+    function onSendCredentials() {
+      console.log('send credentials to', operator.value?.uid)
+    }
+
+    function onResetPassword() {
+      console.log('reset password for', operator.value?.uid)
+    }
+
+    function onDeleteAccess() {
+      console.log('delete access for', operator.value?.uid)
+    }
+
     onMounted(() => {
       loadOperator()
       loadAccounts()
     })
 
-    return { operator, activePanels, accounts, loadingAccounts, totalAccounts, page, perPage, onPageChange, startItem, endItem }
+    return { operator, activePanels, accounts, loadingAccounts, totalAccounts, page, perPage, onPageChange, onBlock, onToggleWebsocket, onRefreshInfo, onSendCredentials, onResetPassword, onDeleteAccess, startItem, endItem }
   },
 }
 </script>
@@ -124,11 +144,18 @@ export default {
 .left-actions { padding: 12px }
 .actions .status-row { display:flex; gap:8px; align-items:center; margin-bottom:8px }
 .op-title { font-weight:600 }
-.headline { font-size:18px; font-weight:600; margin-bottom:6px }
+.headline { font-size:18px; font-weight:600; margin-bottom:0 }
 .panel-row { padding: 6px 0 }
 .small-muted { color:#666; font-size:12px }
 
+/* Header layout */
+.header-row { display:flex; justify-content:space-between; align-items:center; gap:12px }
+
 /* Action button layout */
-.actions { display:flex; flex-direction:column; gap:8px }
-.actions .el-button { display:block; width:100%; box-sizing:border-box; border-radius:6px; padding:8px 14px; min-height:36px; text-align:center; margin:0 !important }
+.actions-row { padding: 1em 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+.actions-row .el-button { margin:0 }
+
+/* Collapse / accordion tweaks: remove top border, keep bottom borders */
+.el-collapse { border-top: none !important }
+.el-collapse__item { border-top: none !important; border-bottom: 1px solid #ebeef5 }
 </style>

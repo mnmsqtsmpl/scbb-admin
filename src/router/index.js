@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../pages/Login.vue'
 import MainLayout from '../layouts/MainLayout.vue'
-import Dashboard from '../pages/Dashboard.vue'
 import Operators from '../pages/Operators.vue'
-import OperatorDetail from '../pages/OperatorDetail.vue'
+import OperatorDetail from '../pages/OperatorDetail.vue' 
 import Users from '../pages/Users.vue'
 import Settings from '../pages/Settings.vue'
 import { useAuthStore } from '../stores/auth'
@@ -15,8 +14,7 @@ const routes = [
     component: MainLayout,
     meta: { requiresAuth: true },
     children: [
-      { path: '', redirect: '/dashboard' },
-      { path: 'dashboard', component: Dashboard },
+      { path: '', redirect: '/operators' },
       { path: 'operators', component: Operators },
       { path: 'operators/:uid', component: OperatorDetail },
       { path: 'users', component: Users },

@@ -31,7 +31,7 @@ export default {
     async function onSubmit() {
       try {
         await auth.login(form.username, form.password)
-        router.push('/dashboard')
+        router.push('/operators')
       } catch (err) {
         console.error(err)
       }
