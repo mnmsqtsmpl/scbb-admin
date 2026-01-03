@@ -1,21 +1,24 @@
 <template>
   <div>
     <el-card>
-      <div class="top-actions" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; overflow-x:auto; padding-bottom:8px;">
-        <el-button size="small" type="primary" @click="onTopAction('connect_rbs')">Подключить клиента на РБС</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('connect_non_client')">Подключить НЕ КЛИЕНТА банка</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('create_fk')">Создать клиента ФК</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('limit_restriction')">Ограничение списания по счетам компании</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('find_by_inn')">Найти оператора счета по ИНН и паспорт</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('login_settings')">Настройки входа ИБ</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('unlock_elba')">Разблокировать пользователя Эльба/Мвд</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('change_limits')">Изменение лимитов по организации</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('employees_list')">Список сотрудников, открывающих счета АУ</el-button>
-        <el-button size="small" type="primary" @click="onTopAction('block_registers')">Блокировка реестром</el-button>
-      </div>
+      <div class="card-top">
+        <div class="top-actions" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; overflow-x:auto; padding-bottom:8px;">
+          <el-button size="small" type="primary" @click="onTopAction('connect_rbs')">Подключить клиента на РБС</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('connect_non_client')">Подключить НЕ КЛИЕНТА банка</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('create_fk')">Создать клиента ФК</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('limit_restriction')">Ограничение списания по счетам компании</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('find_by_inn')">Найти оператора счета по ИНН и паспорт</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('login_settings')">Настройки входа ИБ</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('unlock_elba')">Разблокировать пользователя Эльба/Мвд</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('change_limits')">Изменение лимитов по организации</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('employees_list')">Список сотрудников, открывающих счета АУ</el-button>
+          <el-button size="small" type="primary" @click="onTopAction('block_registers')">Блокировка реестром</el-button>
+        </div>
 
-      <div class="toolbar" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap">
-        <el-input v-model="filters.search" placeholder="Поиск" size="small" style="width:240px" @keyup.enter="onSearch" @blur="onSearch" />
+        <el-tag v-if="showAppliedBadge" type="success" class="filters-badge">Фильтры применены</el-tag>
+
+        <div class="toolbar" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap" @keydown.enter.prevent="onSearch">
+          <el-input v-model="filters.search" placeholder="Поиск" size="small" style="width:240px" @input="onSearchDebounced" @keyup.enter="onSearch" @blur="onSearch" />
 
         <el-select v-model="filters.rights" placeholder="Права оператора ДБО" size="small" style="width:200px" @change="onSearch">
           <el-option label="Все" value="" />
@@ -24,15 +27,15 @@
           <el-option label="Администратор платежей" value="payments_admin" />
         </el-select>
 
-        <el-input v-model="filters.phone" placeholder="Номер телефона" size="small" style="width:180px" @blur="onSearch" />
-        <el-input v-model="filters.corpPhone" placeholder="Корп. номер телефона" size="small" style="width:180px" @blur="onSearch" />
+        <el-input v-model="filters.phone" placeholder="Номер телефона" size="small" style="width:180px" @keyup.enter="onSearch" @blur="onSearch" />
+        <el-input v-model="filters.corpPhone" placeholder="Корп. номер телефона" size="small" style="width:180px" @keyup.enter="onSearch" @blur="onSearch" />
 
         <el-select v-model="filters.sort" placeholder="Сортировка" size="small" style="width:180px" @change="onSearch">
           <el-option label="Сортировка по UID (по возрастанию)" value="uid_asc" />
           <el-option label="Сортировка по UID (по убыванию)" value="uid_desc" />
         </el-select>
 
-        <el-button icon="el-icon-close" circle size="small" @click="resetFilters" title="Очистить все фильтры" />
+        <el-button circle size="small" @click="resetFilters" title="Очистить все фильтры"><el-icon><Close /></el-icon></el-button>
 
         <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
           <div class="small-muted">Показывать на странице:</div>
@@ -42,6 +45,7 @@
             <el-option label="50" :value="50" />
           </el-select>
         </div>
+      </div>
       </div>
 
       <el-table :data="operators" style="width: 100%" v-loading="loading" stripe @row-click="onRowClick">
@@ -85,9 +89,11 @@
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchOperators } from '../services/operators'
+import { Close } from '@element-plus/icons-vue'
 
 export default {
   name: 'Operators',
+  components: { Close },
   setup() {
     const operators = ref([])
     const loading = ref(false)
@@ -100,6 +106,9 @@ export default {
     const endItem = computed(() => Math.min(page.value * perPage.value, total.value))
 
     const loadingMore = ref(false)
+    let searchTimer = null
+    let badgeTimer = null
+    const showAppliedBadge = ref(false)
 
     async function load({ reset = true } = {}) {
       if (reset) {
@@ -140,9 +149,25 @@ export default {
       load({ reset: true })
     }
 
-    function onSearch() {
+    async function onSearch() {
       page.value = 1
-      load({ reset: true })
+      await load({ reset: true })
+
+      // show transient badge
+      showAppliedBadge.value = true
+      if (badgeTimer) clearTimeout(badgeTimer)
+      badgeTimer = setTimeout(() => {
+        showAppliedBadge.value = false
+        badgeTimer = null
+      }, 3000)
+    }
+
+    function onSearchDebounced() {
+      if (searchTimer) clearTimeout(searchTimer)
+      searchTimer = setTimeout(() => {
+        onSearch()
+        searchTimer = null
+      }, 300)
     }
 
     function onPageChange(p) {
@@ -205,14 +230,28 @@ export default {
 
     onBeforeUnmount(() => {
       if (observer && bottomSentinel.value) observer.unobserve(bottomSentinel.value)
+      if (searchTimer) {
+        clearTimeout(searchTimer)
+        searchTimer = null
+      }
+      if (badgeTimer) {
+        clearTimeout(badgeTimer)
+        badgeTimer = null
+      }
     })
 
-    return { operators, loading, onEdit, onDelete, filters, onSearch, page, perPage, onPageChange, total, startItem, endItem, onPerPageChange, onRowClick, resetFilters, onTopAction, bottomSentinel, loadingMore }
+    return { operators, loading, onEdit, onDelete, filters, onSearch, onSearchDebounced, page, perPage, onPageChange, total, startItem, endItem, onPerPageChange, onRowClick, resetFilters, onTopAction, bottomSentinel, loadingMore, showAppliedBadge, Close }
   },
 }
 </script>
 
 <style scoped>
+.small-muted { color: #666; font-size: 12px }
+.top-actions { display:flex; gap:12px; align-items:stretch; margin-bottom:12px; flex-wrap:wrap; }
+.top-actions .el-button { white-space:normal; max-width:240px; text-align:center; padding:10px 14px; display:flex; align-items:center; justify-content:center; line-height:1.2; word-break:break-word; flex: 0 1 240px; box-sizing:border-box; margin:0; min-height:40px; }
+.card-top { position:relative }
+.filters-badge { position:absolute; top:8px; right:16px; z-index:5 }
+
 .small-muted { color: #666; font-size: 12px }
 .top-actions { display:flex; gap:12px; align-items:stretch; margin-bottom:12px; flex-wrap:wrap; }
 .top-actions .el-button { white-space:normal; max-width:240px; text-align:center; padding:10px 14px; display:flex; align-items:center; justify-content:center; line-height:1.2; word-break:break-word; flex: 0 1 240px; box-sizing:border-box; margin:0; min-height:40px; }
