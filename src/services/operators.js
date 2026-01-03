@@ -1,20 +1,47 @@
 // Mock operator service with simple filtering and pagination
-const MOCK = [
-  { uid: 5548, fullName: 'Хуснутдинов Мусяит Сахибгареевич', dob: '1980-01-01', phone: '8 (965) 032-15-46', email: 'nehreth@reth.werg', createdAt: '2025-12-30', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5547, fullName: 'Тулаев Вадим Иванович', dob: '1995-09-03', phone: '8 (924) 343-53-45', email: 'es2@svetvodov-adm.ru', createdAt: '2025-12-30', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5546, fullName: 'Уваров Нифонт Владленович', dob: '1988-01-20', phone: '8 (993) 553-25-96', email: '', createdAt: '2025-12-26', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5545, fullName: 'Клюшин Всеволод Вячеславович', dob: '1982-02-28', phone: '8 (991) 500-20-20', email: '', createdAt: '2025-12-25', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5544, fullName: 'Месропян Арман Робертович', dob: '1985-07-11', phone: '8 (968) 866-66-61', email: '', createdAt: '2025-12-25', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5543, fullName: 'Акапитулова Татьяна Евгеньевна', dob: '1975-07-01', phone: '8 (963) 772-13-83', email: '', createdAt: '2025-12-25', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5542, fullName: 'Легийкина Виктория Владимировна', dob: '1982-04-06', phone: '8 (903) 941-33-56', email: '', createdAt: '2025-12-24', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5541, fullName: 'Колесникова Вера Константиновна', dob: '2000-01-01', phone: '8 (007) 970-07-97', email: '', createdAt: '2025-12-24', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5540, fullName: 'ТочнёноМультик Клиент Тестовый', dob: '1990-12-01', phone: '8 (888) 777-66-55', email: '', createdAt: '2025-12-24', status: 'active', migrated: false, rights: 'operator' },
-  { uid: 5539, fullName: 'Русаков Андрей Николаевич', dob: '1991-05-18', phone: '8 (975) 215-19-32', email: 'Duncan14@gmail.com', createdAt: '2025-12-23', status: 'active', migrated: false, rights: 'operator' },
-]
 
-export async function fetchOperators({ search = '', page = 1, perPage = 10, status = '', rights = '', migrated = '', createdFrom = null, createdTo = null } = {}) {
+function randomInt(seed, min, max) {
+  // simple LCG for deterministic pseudo-randomness
+  let x = (seed * 9301 + 49297) % 233280
+  return min + (x % (max - min + 1))
+}
+
+function formatPhone(n) {
+  const s = String(n).padStart(10, '0')
+  return `8 (${s.slice(0,3)}) ${s.slice(3,6)}-${s.slice(6,8)}-${s.slice(8,10)}`
+}
+
+function randomDate(seed, startYear = 2023, endYear = 2025) {
+  const year = startYear + (seed % (endYear - startYear + 1))
+  const month = 1 + (seed % 12)
+  const day = 1 + (seed % 28)
+  return `${String(day).padStart(2,'0')}.${String(month).padStart(2,'0')}.${year}`
+}
+
+const FIRST = ['Алексей','Денис','Андрей','Татьяна','Виктория','Анна','Роман','Сергей','Дмитрий','Анастасия']
+const LAST = ['Иванов','Петров','Смирнов','Кузнецов','Соколов','Новиков','Морозов','Васильев','Ковалев','Попов']
+const MID = ['Иванович','Петрович','Андреевич','Юрьевич','Владимирович','Сергеевич']
+
+const MOCK = Array.from({ length: 300 }).map((_, idx) => {
+  const uid = 4000 + idx
+  const f = FIRST[idx % FIRST.length]
+  const l = LAST[(idx + 3) % LAST.length]
+  const m = MID[idx % MID.length]
+  const fullName = `${l} ${f} ${m}`
+  const phoneSeed = idx * 7 + 1000
+  const corpSeed = idx * 11 + 2000
+  const phone = formatPhone(phoneSeed)
+  const corpPhone = formatPhone(corpSeed)
+  const createdAt = randomDate(idx)
+  const rights = idx % 10 === 0 ? 'admin' : (idx % 7 === 0 ? 'payments_admin' : 'operator')
+  const migrated = idx % 5 === 0
+  const status = idx % 17 === 0 ? 'inactive' : 'active'
+  return { uid, fullName, dob: '01.01.1990', phone, corpPhone, email: `user${uid}@example.com`, createdAt, status, migrated, rights }
+})
+
+export async function fetchOperators({ search = '', phone = '', corpPhone = '', page = 1, perPage = 10, status = '', rights = '', migrated = '', createdFrom = null, createdTo = null, sort = '' } = {}) {
   // simulate network
-  await new Promise((r) => setTimeout(r, 250))
+  await new Promise((r) => setTimeout(r, 200))
 
   let items = MOCK.slice()
 
@@ -24,6 +51,16 @@ export async function fetchOperators({ search = '', page = 1, perPage = 10, stat
     items = items.filter((it) =>
       String(it.uid).includes(s) || it.fullName.toLowerCase().includes(s) || it.phone.toLowerCase().includes(s) || (it.email || '').toLowerCase().includes(s)
     )
+  }
+
+  if (phone) {
+    const p = String(phone).trim().toLowerCase()
+    items = items.filter((it) => it.phone.toLowerCase().includes(p))
+  }
+
+  if (corpPhone) {
+    const p = String(corpPhone).trim().toLowerCase()
+    items = items.filter((it) => it.corpPhone.toLowerCase().includes(p))
   }
 
   if (status) {
@@ -43,13 +80,19 @@ export async function fetchOperators({ search = '', page = 1, perPage = 10, stat
   const to = createdTo ? new Date(createdTo) : null
   if (from || to) {
     items = items.filter((it) => {
-      const d = new Date(it.createdAt)
+      // createdAt is dd.mm.yyyy
+      const parts = it.createdAt.split('.')
+      const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
       if (from && to) return d >= from && d <= to
       if (from) return d >= from
       if (to) return d <= to
       return true
     })
   }
+
+  // sorting
+  if (sort === 'uid_asc') items.sort((a,b) => a.uid - b.uid)
+  if (sort === 'uid_desc') items.sort((a,b) => b.uid - a.uid)
 
   const total = items.length
   const start = (page - 1) * perPage
