@@ -41,12 +41,13 @@
         <router-view />
       </el-main>
     </el-container>
-  </el-container>
+    <!-- Change password modal -->
+    <change-password-modal v-model:visible="changePwdVisible" @changed="onPasswordChanged" />  </el-container>
 </template>
 
 <script>
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 export default {
   setup() {
@@ -90,18 +91,26 @@ export default {
       return { background: `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`, color: '#fff' }
     })
 
+    const changePwdVisible = ref(false)
+
     function onUserMenuCommand(command) {
       if (command === 'logout') {
         auth.logout()
         router.push('/login')
       } else if (command === 'change_password') {
-        // placeholder — implement actual change-password flow/page
-        alert('Сменить пароль — пока заглушка')
+        changePwdVisible.value = true
       }
     }
 
-    return { active, onUserMenuCommand, userInitials, userAvatar, avatarStyle }
+    function onPasswordChanged() {
+      // placeholder for additional reactions (toast is in modal)
+    }
+
+    return { active, onUserMenuCommand, userInitials, userAvatar, avatarStyle, changePwdVisible, onPasswordChanged }
   },
+  components: {
+    ChangePasswordModal: () => import('../components/ChangePasswordModal.vue')
+  }
 }
 </script>
 

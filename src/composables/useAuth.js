@@ -18,5 +18,12 @@ export function useAuthMock() {
     return { id: 1, name: 'Demo user' }
   }
 
-  return { login, fetchUser }
+  async function changePassword(oldPassword, newPassword) {
+    await _fakeNetwork(true, 500)
+    if (!oldPassword || !newPassword) throw new Error('Неверные данные')
+    // mock always succeeds
+    return true
+  }
+
+  return { login, fetchUser, changePassword }
 }

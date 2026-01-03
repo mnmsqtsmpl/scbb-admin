@@ -25,5 +25,10 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
     },
+
+    async changePassword(oldPassword, newPassword) {
+      const { changePassword } = useAuthMock()
+      return changePassword(oldPassword, newPassword)
+    },
   },
 })
