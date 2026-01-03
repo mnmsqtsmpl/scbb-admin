@@ -15,27 +15,24 @@
       </div>
 
       <div class="toolbar" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap">
-        <el-input v-model="filters.search" placeholder="Поиск" size="small" style="width:240px" @keyup.enter.native="onSearch" />
+        <el-input v-model="filters.search" placeholder="Поиск" size="small" style="width:240px" @keyup.enter="onSearch" @blur="onSearch" />
 
-        <el-select v-model="filters.rights" placeholder="Права оператора ДБО" size="small" style="width:200px">
+        <el-select v-model="filters.rights" placeholder="Права оператора ДБО" size="small" style="width:200px" @change="onSearch">
           <el-option label="Все" value="" />
           <el-option label="Оператор" value="operator" />
           <el-option label="Админ" value="admin" />
           <el-option label="Администратор платежей" value="payments_admin" />
         </el-select>
 
-        <el-input v-model="filters.phone" placeholder="Номер телефона" size="small" style="width:180px" />
-        <el-input v-model="filters.corpPhone" placeholder="Корп. номер телефона" size="small" style="width:180px" />
+        <el-input v-model="filters.phone" placeholder="Номер телефона" size="small" style="width:180px" @blur="onSearch" />
+        <el-input v-model="filters.corpPhone" placeholder="Корп. номер телефона" size="small" style="width:180px" @blur="onSearch" />
 
-        <el-select v-model="filters.sort" placeholder="Сортировка" size="small" style="width:180px">
+        <el-select v-model="filters.sort" placeholder="Сортировка" size="small" style="width:180px" @change="onSearch">
           <el-option label="Сортировка по UID (по возрастанию)" value="uid_asc" />
           <el-option label="Сортировка по UID (по убыванию)" value="uid_desc" />
         </el-select>
 
-        <el-button icon="el-icon-close" circle size="small" @click="resetFilters" title="Сброс фильтров" />
-
-        <el-button size="small" type="primary" @click="onSearch">Применить</el-button>
-        <el-button size="small" @click="resetFilters">Сброс</el-button>
+        <el-button icon="el-icon-close" circle size="small" @click="resetFilters" title="Очистить все фильтры" />
 
         <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
           <div class="small-muted">Показывать на странице:</div>
@@ -97,7 +94,7 @@ export default {
     const total = ref(0)
     const page = ref(1)
     const perPage = ref(10)
-    const filters = ref({ search: '', rights: '', phone: '', corpPhone: '', sort: '', migrated: '', createdRange: null })
+    const filters = ref({ search: '', status: '', rights: '', phone: '', corpPhone: '', sort: '', migrated: '', createdRange: null })
 
     const startItem = computed(() => (total.value === 0 ? 0 : (page.value - 1) * perPage.value + 1))
     const endItem = computed(() => Math.min(page.value * perPage.value, total.value))
@@ -138,7 +135,7 @@ export default {
     }
 
     function resetFilters() {
-      filters.value = { search: '', rights: '', phone: '', corpPhone: '', sort: '', migrated: '', createdRange: null }
+      filters.value = { search: '', status: '', rights: '', phone: '', corpPhone: '', sort: '', migrated: '', createdRange: null }
       page.value = 1
       load({ reset: true })
     }
